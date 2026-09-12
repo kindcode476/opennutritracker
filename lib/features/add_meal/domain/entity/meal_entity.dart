@@ -1,4 +1,3 @@
-
 import 'package:equatable/equatable.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_portion_entity.dart';
 import 'package:opennutritracker/core/data/dbo/meal_dbo.dart';

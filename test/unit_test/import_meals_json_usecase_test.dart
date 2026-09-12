@@ -30,13 +30,12 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import '../helpers/hive_test_setup.dart';
 import '../helpers/fake_hive_db_provider.dart';
 
-
 /// A picked file with **no path** — what every browser hands back, because
 /// the file is a blob the page holds rather than something on a disk the app
 /// can open.
 final class _PathlessPickedFile extends PlatformFile {
   _PathlessPickedFile(this.name, String content)
-      : _bytes = Uint8List.fromList(utf8.encode(content));
+    : _bytes = Uint8List.fromList(utf8.encode(content));
 
   @override
   final String name;
@@ -63,7 +62,8 @@ final class _PathlessPickedFile extends PlatformFile {
   Stream<Uint8List> readAsByteStream() => Stream.value(_bytes);
 }
 
-class _FakeFilePicker extends FilePickerPlatform with MockPlatformInterfaceMixin {
+class _FakeFilePicker extends FilePickerPlatform
+    with MockPlatformInterfaceMixin {
   _FakeFilePicker(this.picked);
 
   final PlatformFile? picked;
@@ -155,7 +155,7 @@ void main() {
     late CustomMealDataSource customMealDataSource;
     late _RecordingAddIntakeUsecase addIntake;
     late ImportMealsJsonUsecase sut;
-    final _originalPicker = FilePickerPlatform.instance;
+    final originalPicker = FilePickerPlatform.instance;
 
     setUpAll(() {
       TestWidgetsFlutterBinding.ensureInitialized();
@@ -196,7 +196,7 @@ void main() {
     });
 
     tearDown(() {
-      FilePickerPlatform.instance = _originalPicker;
+      FilePickerPlatform.instance = originalPicker;
     });
 
     test('reads a picked file that has no path (the web case)', () async {

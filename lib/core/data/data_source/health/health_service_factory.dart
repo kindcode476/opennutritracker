@@ -1,4 +1,3 @@
-
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/data/data_source/health/health_package_service.dart';
 import 'package:opennutritracker/core/data/data_source/health/health_service.dart';
