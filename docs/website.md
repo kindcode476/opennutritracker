@@ -38,6 +38,13 @@ dashboard. It needs two repository secrets:
 | `CLOUDFLARE_API_TOKEN` | A token with the *Edit Cloudflare Workers* template |
 | `CLOUDFLARE_ACCOUNT_ID` | The account the Worker lives in |
 
+The workflow calls `wrangler` directly at a pinned version rather than through
+`cloudflare/wrangler-action`, which installs wrangler 3.90 by default. A
+Worker that serves only static assets — no `main`, no server-side code, which
+is what this is — is not supported before 4.x, and on 3.90 the deploy fails
+with *"Missing entry-point"*: a message that reads like a config error and is
+really a version one.
+
 Two more are optional. `SUPABASE_PROJECT_URL` and `SUPABASE_PROJECT_ANON_KEY`
 turn on the multi-source food backend (USDA, BLS); without them the app falls
 back to Open Food Facts, which needs no credentials. `SENTRY_DNS` is left
