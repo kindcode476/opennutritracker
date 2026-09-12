@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -21,13 +19,14 @@ import 'package:opennutritracker/features/settings/presentation/bloc/settings_bl
 import 'package:opennutritracker/features/settings/presentation/widgets/health_disclosure_dialog.dart';
 import 'package:opennutritracker/generated/l10n.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 
 /// What the platform health store is called in front of the user. Both names
 /// are product names, so they are deliberately not localized. Lives here
 /// because it is a presentation-layer label; the settings row that leads to
 /// this screen shows the same name and reads it from here.
 String get healthPlatformName =>
-    Platform.isIOS ? 'Apple Health' : 'Health Connect';
+    isIOSPlatform ? 'Apple Health' : 'Health Connect';
 
 /// Whether the platform health store is asked for body fat as well as
 /// workouts, which decides whether the disclosure mentions it.
@@ -42,7 +41,7 @@ String get healthPlatformName =>
 /// read there again, both have to change together — a disclosure that omits
 /// what is read is an under-disclosure, which is the direction Play
 /// penalises.
-bool get healthStoreReadsBodyFat => Platform.isIOS;
+bool get healthStoreReadsBodyFat => isIOSPlatform;
 
 /// Settings → Health sync: opts into importing finished workouts from Health
 /// Connect / Apple Health, and tunes how much of the energy those workouts

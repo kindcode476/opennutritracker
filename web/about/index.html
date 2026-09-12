@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>OpenNutriTracker — free, open-source calorie and nutrition tracking</title>
+<title>About — OpenNutriTracker</title>
 <meta name="description" content="Open-source calorie, macro, and micronutrient logging for Android and iOS. No account, no ads, no analytics; your diary stays encrypted on your phone." />
 <meta name="theme-color" content="#23da62" />
-<link rel="icon" href="/logo.svg" type="image/svg+xml" />
-<link rel="stylesheet" href="/styles.css" />
+<link rel="icon" href="logo.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="styles.css" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="OpenNutriTracker" />
 <meta property="og:description" content="Free. Open. Cited. Calorie, macro, and micronutrient logging for Android and iOS, with your diary kept on your phone." />
-<meta property="og:image" content="/logo.svg" />
+<meta property="og:image" content="logo.svg" />
 <meta name="twitter:card" content="summary" />
 </head>
 <body>
@@ -20,7 +20,7 @@
 
 <header class="hero">
   <div class="wrap">
-    <img src="/logo.svg" alt="" width="84" height="84" />
+    <img src="logo.svg" alt="" width="84" height="84" />
     <h1>OpenNutriTracker</h1>
     <p class="tagline">Free. Open. Cited.</p>
     <p class="lede">
@@ -31,9 +31,9 @@
       condition, or simply knowing.
     </p>
     <div class="actions">
-      <a class="btn btn-primary" href="https://play.google.com/store/apps/details?id=com.opennutritracker.ont.opennutritracker">Google Play<small>Android</small></a>
-      <a class="btn btn-primary" href="https://apps.apple.com/us/app/opennutritracker/id6451490901">App Store<small>iOS</small></a>
-      <a class="btn" href="https://github.com/simonoppowa/OpenNutriTracker/releases">GitHub Releases<small>APK, signature published</small></a>
+      <a class="btn btn-primary" href="/">Open the app<small>runs in this browser</small></a>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.opennutritracker.ont.opennutritracker">Google Play<small>the upstream app, Android</small></a>
+      <a class="btn" href="https://apps.apple.com/us/app/opennutritracker/id6451490901">App Store<small>the upstream app, iOS</small></a>
     </div>
   </div>
 </header>
@@ -105,10 +105,16 @@
     <p>No account, no sign-in, no analytics, no ads.</p>
     <div class="note">
       <p>
-        Your profile, diary, activities, weight, water and fasting history, custom meals, and
-        recipes live in local storage encrypted with AES-256. The key is generated on first
-        launch, kept in the Android Keystore or iOS Keychain, and never transmitted.
-        <b>Settings → Delete all my data</b> wipes the active profile.
+        This is a personal web build. Your profile, diary, activities, weight, water and
+        fasting history, custom meals, and recipes are held in this browser's own storage
+        and are never sent to a server. <b>Settings → Delete all my data</b> wipes the
+        active profile, and so does clearing site data for this address — which is worth
+        knowing, because it is irreversible and takes one tap in a browser menu.
+      </p>
+      <p>
+        A browser has no Keystore or Keychain, so the hardware-backed key protection the
+        phone app relies on has no equivalent here. Data stays local either way; the
+        guarantee around it is weaker.
       </p>
       <p>
         The repository lists every destination the app can contact and what each one is sent.
@@ -116,8 +122,9 @@
         <a href="https://www.iubenda.com/privacy-policy/53501884">Data Protection</a>.
       </p>
       <p>
-        This page holds to the same standard: it loads no fonts, scripts, images, or trackers
-        from anyone but the host serving it.
+        This page loads no fonts, scripts, images, or trackers from anyone but the host
+        serving it. The app itself reaches Open Food Facts when you search for a food or
+        scan a barcode — that is what a food database is — and nothing else.
       </p>
     </div>
   </div>

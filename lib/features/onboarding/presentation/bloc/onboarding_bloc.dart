@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:opennutritracker/core/domain/entity/app_theme_entity.dart';
@@ -15,6 +13,7 @@ import 'package:opennutritracker/core/utils/calc/calorie_goal_calc.dart';
 import 'package:opennutritracker/core/utils/calc/macro_calc.dart';
 import 'package:opennutritracker/core/utils/url_const.dart';
 import 'package:opennutritracker/features/onboarding/domain/entity/user_data_mask_entity.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 
 part 'onboarding_event.dart';
 
@@ -72,7 +71,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       return;
     }
 
-    final defaults = LocaleUnitDefaults.fromLocale(Platform.localeName);
+    final defaults = LocaleUnitDefaults.fromLocale(platformLocaleName);
     userSelection.heightUsesImperial = defaults.heightUsesImperial;
     userSelection.bodyWeightUnit = defaults.bodyWeightUnit;
     userSelection.foodUsesImperial = defaults.foodUsesImperial;
@@ -90,7 +89,7 @@ class OnboardingBloc extends Bloc<OnboardingEvent, OnboardingState> {
       return;
     }
     userSelection.foodSourceToggles = defaultFoodSourceToggles(
-      Platform.localeName,
+      platformLocaleName,
     );
   }
 

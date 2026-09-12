@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/utils/off_country.dart';
 import 'package:opennutritracker/features/add_meal/data/data_sources/off_data_source.dart';
@@ -8,6 +6,7 @@ import 'package:opennutritracker/features/add_meal/domain/entity/meal_entity.dar
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_portion_entity.dart';
 import 'package:opennutritracker/features/add_meal/domain/entity/meal_nutriments_entity.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 
 class ProductsRepository {
   static final _log = Logger('ProductsRepository');
@@ -43,7 +42,7 @@ class ProductsRepository {
     // re-rank by fusing relevance position with OFF's popularity_key so
     // popular, well-maintained products surface first — without letting
     // popularity drag in off-topic matches the way a hard popularity sort does.
-    final userCountryTag = OffCountry.fromLocale(Platform.localeName);
+    final userCountryTag = OffCountry.fromLocale(platformLocaleName);
     final candidates = <_RankedOffProduct>[];
     for (var i = 0; i < offWordResponse.products.length; i++) {
       final dto = offWordResponse.products[i];

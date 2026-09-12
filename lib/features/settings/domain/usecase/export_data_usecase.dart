@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:archive/archive_io.dart';
+import 'package:logging/logging.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:meta/meta.dart';
 import 'package:opennutritracker/core/data/data_source/custom_meal_data_source.dart';
@@ -17,6 +18,7 @@ import 'package:opennutritracker/core/data/repository/user_activity_repository.d
 import 'package:opennutritracker/core/data/repository/weight_log_repository.dart';
 import 'package:opennutritracker/core/utils/csv_data_exporter.dart';
 import 'package:opennutritracker/core/utils/export_write_verifier.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 import 'package:opennutritracker/core/utils/user_image_storage.dart';
 
 /// The two export shapes available from Settings → Export / Import App Data.
@@ -25,6 +27,8 @@ import 'package:opennutritracker/core/utils/user_image_storage.dart';
 enum ExportFormat { json, csv }
 
 class ExportDataUsecase {
+  static final _log = Logger('ExportDataUsecase');
+
   final UserActivityRepository _userActivityRepository;
   final IntakeRepository _intakeRepository;
   final TrackedDayRepository _trackedDayRepository;
@@ -196,12 +200,28 @@ class ExportDataUsecase {
       // `recipe_images/<id>.webp`). The slug matches what we persist on
       // the DBO, so import can drop the bytes back into place without
       // translating filenames.
-      for (final path in userImagePaths(
+      final photoPaths = userImagePaths(
         recipes: fullRecipes,
         customMeals: _customMealDataSource.getAllCustomMeals(),
         intakes: fullIntake,
-      )) {
-        await _addUserImage(archive, path);
+      );
+      if (isWebPlatform) {
+        // Photos are files in the app's documents directory, which the web
+        // build does not have — nothing there can have written one. A bundle
+        // imported from a phone still carries the slugs on its records, so
+        // this list can be non-empty with no bytes behind it; exporting the
+        // records without the photos is right, and failing the whole export
+        // over an absent file is not.
+        if (photoPaths.isNotEmpty) {
+          _log.info(
+            '${photoPaths.length} photo(s) referenced by this data have no '
+            'file on the web build and are not in the bundle',
+          );
+        }
+      } else {
+        for (final path in photoPaths) {
+          await _addUserImage(archive, path);
+        }
       }
 
       // Weight-log dataset

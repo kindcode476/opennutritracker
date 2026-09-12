@@ -3,8 +3,10 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:opennutritracker/core/utils/hive_db_provider.dart';
 import 'package:opennutritracker/core/utils/hive_storage_integrity_exception.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 import 'package:path_provider/path_provider.dart';
 
 class SecureAppStorageProvider {
@@ -95,6 +97,8 @@ class SecureAppStorageProvider {
   /// non-empty `*.hive` file. Used to distinguish first install from a
   /// partial secure-storage loss.
   Future<bool> _hasExistingEncryptedHiveData() async {
+    if (isWebPlatform) return _hasExistingWebHiveData();
+
     final directory = await getApplicationDocumentsDirectory();
     if (!await directory.exists()) return false;
 
@@ -102,6 +106,27 @@ class SecureAppStorageProvider {
       if (entity is! File) continue;
       if (!entity.path.toLowerCase().endsWith('.hive')) continue;
       if (await entity.length() > 0) return true;
+    }
+    return false;
+  }
+
+  /// The web build has no `*.hive` files to sweep — Hive keeps its boxes in
+  /// IndexedDB there, and `path_provider` has no browser implementation at
+  /// all, so the directory walk above would throw rather than answer.
+  ///
+  /// Ask Hive itself instead. The question is unchanged: is there data on
+  /// this device that the missing key was protecting? A single box is
+  /// enough to say yes, so this stops at the first hit.
+  Future<bool> _hasExistingWebHiveData() async {
+    const candidates = <String>[
+      ...HiveDBProvider.perProfileBoxNames,
+      HiveDBProvider.profileBoxName,
+      HiveDBProvider.appConfigBoxName,
+      HiveDBProvider.customMealBoxName,
+      HiveDBProvider.recipeBoxName,
+    ];
+    for (final boxName in candidates) {
+      if (await Hive.boxExists(boxName)) return true;
     }
     return false;
   }

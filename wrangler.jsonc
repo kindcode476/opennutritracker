@@ -1,28 +1,28 @@
-// Cloudflare Workers deployment for the project's static site in public/.
+// Cloudflare Workers deployment for the personal web build of the app.
 //
-// The Cloudflare build runs `npx wrangler deploy` at the repository root. With
-// no config file, wrangler has to guess what to publish, finds no directory of
-// static files in a Flutter app tree, and fails with:
+// What deploys is `build/web` — the output of `flutter build web`, not a
+// directory in the repository. Building it needs the Flutter SDK, which the
+// Cloudflare build image does not have, so the deploy runs from GitHub
+// Actions instead (.github/workflows/deploy-web.yml) and Cloudflare's own Git
+// build should be switched off. Running `npx wrangler deploy` without
+// building first will fail with "assets directory does not exist", which is
+// the honest failure: there is nothing to deploy until Flutter has run.
 //
-//   Could not detect a directory containing static files (e.g. html, css and
-//   js) for the project
-//
-// This file removes the guesswork. It deploys public/ as a static-asset Worker
-// with no server-side code — there is no "main", so nothing runs per request.
-//
-// The Flutter app itself is not deployed here and has no web target: it builds
-// for Android and iOS only, and its dependencies (barcode scanner, Health
-// Connect / Apple Health, secure storage) are mobile plugins.
+// Everything under `web/` in the repository (the shell, icons, _headers,
+// robots.txt, and the /about page) is copied into `build/web` by the build,
+// so the deployed directory is self-contained.
 //
 // "name" must match the Worker the Cloudflare project is connected to, or the
-// build will deploy to a second Worker under this name instead.
+// deploy will publish to a second Worker under this name instead.
 {
   "$schema": "https://unpkg.com/wrangler/config-schema.json",
   "name": "opennutritracker",
   "compatibility_date": "2026-09-12",
   "assets": {
-    "directory": "./public",
-    "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
+    "directory": "./build/web",
+    // The app owns its routes: a deep link to /diary is the app's URL, not a
+    // missing file, so unknown paths serve the app shell rather than a 404.
+    // Real files — /about/, the icons, the engine — still win over this.
+    "not_found_handling": "single-page-application"
   }
 }

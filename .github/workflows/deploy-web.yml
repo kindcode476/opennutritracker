@@ -1,0 +1,63 @@
+# Builds the web app and deploys it to Cloudflare.
+#
+# This exists because Cloudflare's own Git build cannot do the job: its build
+# image has no Flutter SDK, so `npx wrangler deploy` there finds no build/web
+# and fails. Turn that build off in the Cloudflare dashboard and let this
+# workflow deploy instead.
+name: Deploy web app
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer commit should win rather than race; never cancel a deploy midway.
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Flutter + cache packages
+        uses: ./.github/actions/setup-flutter-cache
+
+      # envied generates lib/core/utils/env.g.dart from this file, so codegen
+      # needs it to exist even when every value is blank.
+      #
+      # SENTRY_DNS is deliberately left empty unless the repository sets the
+      # secret: this is a personal fork, and crash reports from it have no
+      # business arriving in the upstream project's Sentry account. Empty DSN
+      # means Sentry is inert.
+      - name: Write .env
+        run: |
+          cat > .env <<EOF
+          SENTRY_DNS="${{ secrets.SENTRY_DNS }}"
+          SUPABASE_PROJECT_URL="${{ secrets.SUPABASE_PROJECT_URL }}"
+          SUPABASE_PROJECT_ANON_KEY="${{ secrets.SUPABASE_PROJECT_ANON_KEY }}"
+          EOF
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      # --no-web-resources-cdn bundles CanvasKit with the app. Without it the
+      # engine is fetched from gstatic.com on every cold load: a third-party
+      # request this app has no reason to make, and one the CSP in web/_headers
+      # blocks anyway, which would leave a blank page rather than a slow one.
+      - name: Build web
+        run: flutter build web --release --no-web-resources-cdn --base-href /
+
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy

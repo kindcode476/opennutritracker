@@ -1,62 +1,89 @@
-# The project website
+# The deployed web app
 
-`public/` holds a small static site — a landing page, a 404 page, the logo, a
-stylesheet, response headers, and `robots.txt`. Cloudflare serves it as a
-static-asset Worker. There is no server-side code: `wrangler.jsonc` declares no
-`main`, so nothing runs per request.
+This fork runs as a **personal web build** of the app: the same Flutter
+codebase that ships to Android and iOS, compiled for the browser and deployed
+to Cloudflare. It is not a marketing site and not a rewrite — it is the app,
+at a URL.
 
-## Why this exists
+The static page that used to live here (a landing page pointing at the store
+listings) is now one page inside the app's shell, at `/about`.
 
-The Cloudflare project attached to this repository runs `npx wrangler deploy`
-at the repository root on every push. Before `wrangler.jsonc` existed, wrangler
-had to guess what to publish, found no directory of static files in a Flutter
-app tree, and failed the build with:
+## What deploys
 
-```
-Could not detect a directory containing static files (e.g. html, css and js)
-for the project
-```
+`flutter build web` produces `build/web`, and that directory is what
+Cloudflare serves. Everything under `web/` in the repository — the HTML
+shell, the PWA manifest, the icons, `_headers`, `robots.txt`, and `/about` —
+is copied into it by the build, so the deployed directory is self-contained
+and nothing is assembled by hand.
 
-The config names `public/` explicitly, so the guesswork — and the failure —
-is gone.
+`wrangler.jsonc` points at `build/web` and declares no `main`: there is no
+server-side code, just static assets. Unknown paths serve the app shell
+(`single-page-application`) because a deep link belongs to the app's router,
+not to a missing file.
 
-**The Flutter app is not what gets deployed.** It has no web target: there is
-no `web/` directory, and the app depends on mobile-only plugins (barcode
-scanner, Health Connect / Apple Health, secure storage backed by the Keystore
-and Keychain). Adding a web build is a separate decision, not a deployment
-detail.
+## Who runs the build
 
-## Commands
+**GitHub Actions**, not Cloudflare. Cloudflare's build image has no Flutter
+SDK, so its own Git build cannot produce `build/web` — it fails with *"Could
+not detect a directory containing static files"* or, once this config landed,
+*"assets directory does not exist"*. Both are the same fact stated twice:
+nothing to deploy until Flutter has run.
+
+So `.github/workflows/deploy-web.yml` builds and deploys on every push to
+`main`, and **the Cloudflare Git build should be switched off** in the
+dashboard. It needs two repository secrets:
+
+| Secret | What it is |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | A token with the *Edit Cloudflare Workers* template |
+| `CLOUDFLARE_ACCOUNT_ID` | The account the Worker lives in |
+
+Two more are optional. `SUPABASE_PROJECT_URL` and `SUPABASE_PROJECT_ANON_KEY`
+turn on the multi-source food backend (USDA, BLS); without them the app falls
+back to Open Food Facts, which needs no credentials. `SENTRY_DNS` is left
+empty on purpose — crash reports from a personal fork have no business
+arriving in the upstream project's account, and an empty DSN makes Sentry
+inert.
+
+## Building it yourself
 
 ```sh
-just site         # preview on http://localhost:8787
-just site_deploy  # deploy (this is what the Cloudflare build runs)
+flutter build web --release --no-web-resources-cdn --base-href /
+just site        # preview the built output on http://localhost:8787
+just site_deploy # deploy it (needs Cloudflare credentials)
 ```
 
-Both shell out to `npx wrangler`, so they need Node and network access but no
-Flutter toolchain. Deploying needs Cloudflare credentials; the Cloudflare build
-supplies its own, and locally `wrangler` will prompt to log in.
+`--no-web-resources-cdn` is not optional. Without it the engine (CanvasKit) is
+fetched from `gstatic.com` on every cold load: a third-party request this app
+has no reason to make, blocked by the CSP in `web/_headers`, which leaves a
+blank page rather than a slow one.
 
-## Rules for the site
+## What the browser costs you
 
-- **No third-party requests.** No hosted fonts, no analytics, no CDN scripts,
-  no remotely hosted images. The app's privacy claims are about what it
-  contacts; a page that makes those claims while loading a tracker would
-  undercut them. `public/_headers` pins that with a `Content-Security-Policy`
-  of `default-src 'none'` and `img-src 'self'`, so a stray external reference
-  fails visibly rather than quietly phoning home.
-- **No copy of the privacy policy.** The formal policy is published at
-  [iubenda](https://www.iubenda.com/privacy-policy/53501884) and is the URL the
-  store listings point to. A second copy here could drift from it, and a
-  privacy policy that contradicts itself is worse than one that lives in a
-  single place. `docs/privacy-policy/*.txt` are the archived store-submission
-  texts and are not published by the site either.
-- **Claims match the README.** The landing-page copy is drawn from README.md.
-  If a claim changes there — a figure, a standard, a guarantee — change it in
-  `public/index.html` too.
+The web build is the same app, but a browser is not a phone, and three
+guarantees change:
+
+- **No hardware-backed key.** On a phone the Hive encryption key lives in the
+  Android Keystore or iOS Keychain. A browser has no equivalent, so the key
+  sits in browser storage. Your data still never leaves the device; the
+  protection around it is weaker.
+- **Clearing site data deletes everything.** Hive keeps its boxes in
+  IndexedDB. One tap in a browser's settings wipes the diary with no undo, so
+  the export in Settings matters more here than it does on a phone.
+- **Three features have no browser implementation:** Health Connect / Apple
+  Health sync, local notifications (so no fasting-complete alert), and photos
+  for meals, recipes and profiles — `path_provider` has no web support, and
+  the app degrades to a logged warning rather than a crash.
+
+## Requests the app makes
+
+The shell loads nothing from a third party: no hosted fonts, no analytics, no
+CDN scripts. The app itself contacts **Open Food Facts** when you search for a
+food or scan a barcode, and its image CDN for product photos — that is what a
+food database is, and `web/_headers` allows those two hosts and no others.
 
 ## Worker name
 
 `name` in `wrangler.jsonc` must match the Worker the Cloudflare project is
-connected to. If they differ, the build succeeds but publishes to a second
-Worker under the name in this file, and the expected hostname stays stale.
+connected to. If they differ, the deploy succeeds and publishes to a second
+Worker under that name, leaving the expected hostname stale.

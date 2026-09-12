@@ -109,6 +109,13 @@ dev_dependencies:
   # Transitively required by share_plus; declared explicitly so widget tests
   # can verify ShareParams at the plugin boundary.
   share_plus_platform_interface: ^7.2.0
+  # Transitively required by file_picker; declared explicitly so tests can
+  # stub FilePickerPlatform.instance with a picked file that has no path —
+  # what a browser hands back, and what the web import path has to survive.
+  file_picker_platform_interface: ^3.4.0
+  # Transitively required by file_picker; a PlatformFile fake has to supply
+  # the XFile the interface asks for.
+  cross_file: ^0.3.5+5
   plugin_platform_interface: ^2.1.8
 
 flutter:

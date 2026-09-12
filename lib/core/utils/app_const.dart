@@ -1,5 +1,5 @@
-import 'dart:io' show Platform;
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 
 class AppConst {
   static const userAgentAppName = "OpenNutriTracker";
@@ -15,9 +15,9 @@ class AppConst {
   }
 
   static String getPlatformName() {
-    if (Platform.isAndroid) {
+    if (isAndroidPlatform) {
       return platformNameAndroid;
-    } else if (Platform.isIOS) {
+    } else if (isIOSPlatform) {
       return platformNameIOS;
     } else {
       return "";
