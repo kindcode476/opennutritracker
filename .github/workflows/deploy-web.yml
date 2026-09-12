@@ -22,6 +22,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      # First, before five minutes of Flutter build: a deploy that cannot
+      # authenticate should say so in seconds, and say which half is missing.
+      - name: Check Cloudflare credentials are present
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -z "$CLOUDFLARE_API_TOKEN" ] && missing="$missing CLOUDFLARE_API_TOKEN"
+          [ -z "$CLOUDFLARE_ACCOUNT_ID" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing — add them under" \
+                 "Settings → Secrets and variables → Actions, then re-run this workflow."
+            exit 1
+          fi
+
       - uses: actions/checkout@v5
 
       - name: Setup Flutter + cache packages
@@ -54,23 +70,6 @@ jobs:
       # blocks anyway, which would leave a blank page rather than a slow one.
       - name: Build web
         run: flutter build web --release --no-web-resources-cdn --base-href /
-
-      # Fail here, plainly, rather than inside wrangler with an auth error that
-      # does not say which half is missing.
-      - name: Check Cloudflare credentials are present
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          missing=""
-          [ -z "$CLOUDFLARE_API_TOKEN" ] && missing="$missing CLOUDFLARE_API_TOKEN"
-          [ -z "$CLOUDFLARE_ACCOUNT_ID" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID"
-          if [ -n "$missing" ]; then
-            echo "::error::Missing repository secret(s):$missing — add them under" \
-                 "Settings → Secrets and variables → Actions. The build above succeeded;" \
-                 "only the deploy needs these."
-            exit 1
-          fi
 
       # wrangler is invoked directly, at a pinned version, rather than through
       # cloudflare/wrangler-action. The action installs wrangler 3.90 by
