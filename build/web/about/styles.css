@@ -1,0 +1,277 @@
+/* OpenNutriTracker site. Self-hosted only: no fonts, scripts, or images are
+   fetched from a third party, so reading this page contacts nobody but the
+   host serving it. The app makes the same promise about its own requests. */
+
+:root {
+  color-scheme: light dark;
+
+  --bg: #fbfbf9;
+  --bg-raised: #ffffff;
+  --border: #e3e5e1;
+  --text: #16201a;
+  --text-muted: #5b6862;
+  --accent: #12833c;
+  --accent-contrast: #ffffff;
+  --accent-soft: #eaf7ee;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1311;
+    --bg-raised: #141b18;
+    --border: #232c28;
+    --text: #e9efeb;
+    --text-muted: #9aa8a1;
+    --accent: #23da62;
+    --accent-contrast: #07130c;
+    --accent-soft: #12241a;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
+  padding-inline: 20px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+
+.skip-link:focus {
+  left: 20px;
+  top: 12px;
+  z-index: 2;
+  padding: 8px 14px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+/* Hero */
+
+.hero {
+  padding-block: 72px 56px;
+  text-align: center;
+}
+
+.hero img {
+  width: 84px;
+  height: 84px;
+}
+
+.hero h1 {
+  margin: 18px 0 6px;
+  font-size: clamp(2.1rem, 6vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.lede {
+  max-width: 40rem;
+  margin: 20px auto 0;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+/* Buttons */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 22px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-raised);
+  color: var(--text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+
+.btn small {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+/* Sections */
+
+section {
+  padding-block: 40px;
+  border-top: 1px solid var(--border);
+}
+
+section h2 {
+  margin: 0 0 6px;
+  font-size: 1.55rem;
+  letter-spacing: -0.01em;
+}
+
+section > .wrap > p:first-of-type {
+  margin-top: 0;
+  color: var(--text-muted);
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  margin-top: 28px;
+  padding: 0;
+  list-style: none;
+}
+
+.card {
+  padding: 18px 20px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.card h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+}
+
+.card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.features {
+  display: grid;
+  gap: 14px 28px;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  margin-top: 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.features li {
+  padding-left: 1.6em;
+  text-indent: -1.6em;
+  font-size: 0.97rem;
+}
+
+.features b {
+  text-indent: 0;
+}
+
+.note {
+  margin-top: 24px;
+  padding: 18px 20px;
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.95rem;
+}
+
+.note p {
+  margin: 0;
+}
+
+.note p + p {
+  margin-top: 10px;
+}
+
+/* Footer */
+
+footer {
+  padding-block: 36px 56px;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+footer ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 0 0 18px;
+  padding: 0;
+  list-style: none;
+}
+
+footer p {
+  margin: 0 0 10px;
+  max-width: 46rem;
+}
+
+/* 404 */
+
+.centered {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-block: 64px;
+}

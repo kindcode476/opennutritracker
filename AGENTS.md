@@ -71,10 +71,12 @@ just build_web     # flutter build web (the --no-web-resources-cdn flag is requi
 just site          # build, then preview the web app on localhost:8787
 ```
 
-**Web is a supported target in this fork.** The app is deployed as a personal
-web build to Cloudflare from `build/web`; `web/` holds the shell, icons,
-service worker and `_headers`, and GitHub Actions does the build because
-Cloudflare's image has no Flutter. Read
+**Web is a supported target in this fork**, and `build/web` is **committed**:
+Cloudflare's builder has no Flutter SDK, so it publishes the folder rather
+than producing it. Change `lib/`, `web/`, `pubspec.yaml` or the assets and you
+must run `just build_web` and commit `build/web` in the same change, or the
+live site silently keeps serving the old app. `web/` holds the shell, icons,
+service worker and `_headers`. Read
 [`docs/website.md`](docs/website.md) before touching `web/`, `wrangler.jsonc`
 or the deploy workflow. Anything reaching for `dart:io` needs
 `lib/core/utils/platform_info.dart`: `dart:io` compiles for web here and

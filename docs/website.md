@@ -1,63 +1,40 @@
 # The deployed web app
 
-This fork runs as a **personal web build** of the app: the same Flutter
-codebase that ships to Android and iOS, compiled for the browser and deployed
-to Cloudflare. It is not a marketing site and not a rewrite — it is the app,
-at a URL.
+This fork runs as a **personal web build**: the same Flutter codebase that
+ships to Android and iOS, compiled for the browser and served by Cloudflare.
+It is the app at a URL, not a marketing site. The old landing page is one
+route inside it, at `/about`.
 
-The static page that used to live here (a landing page pointing at the store
-listings) is now one page inside the app's shell, at `/about`.
+## How deployment works
 
-## What deploys
+`build/web` — the output of `flutter build web` — **is committed to this
+repository**, and it is what Cloudflare publishes.
 
-`flutter build web` produces `build/web`, and that directory is what
-Cloudflare serves. Everything under `web/` in the repository — the HTML
-shell, the PWA manifest, the icons, `_headers`, `robots.txt`, and `/about` —
-is copied into it by the build, so the deployed directory is self-contained
-and nothing is assembled by hand.
+Cloudflare's builder clones the repo and runs `npx wrangler deploy`.
+`wrangler.jsonc` points at `build/web`, so the deploy is an upload of files
+that are already there. No API token, no CI secrets, no second build service:
+Cloudflare is already authenticated to its own account, and nothing needs to
+compile anything.
 
-`wrangler.jsonc` points at `build/web` and declares no `main`: there is no
-server-side code, just static assets. Unknown paths serve the app shell
-(`single-page-application`) because a deep link belongs to the app's router,
-not to a missing file.
+That is deliberate, and it is the whole reason the folder is committed.
+Cloudflare's build image has no Flutter SDK and cannot get one, so it can
+never produce `build/web` itself — it failed for weeks with *"Could not detect
+a directory containing static files"* and then *"assets.directory does not
+exist"*, which are two ways of saying the same thing. The alternative was a
+GitHub Actions workflow holding Cloudflare credentials; this is simpler, and
+for a one-person fork the trade-offs land differently than they would on a
+shared project.
 
-## Who runs the build
+**The cost, stated plainly:** a committed build can lag the source. If app
+code changes and nobody rebuilds, the live site keeps serving the old app
+with nothing to warn you. Whoever changes `lib/`, `web/`, `pubspec.yaml` or
+the assets must rebuild and commit the result in the same change.
 
-**GitHub Actions**, not Cloudflare. Cloudflare's build image has no Flutter
-SDK, so its own Git build cannot produce `build/web` — it fails with *"Could
-not detect a directory containing static files"* or, once this config landed,
-*"assets directory does not exist"*. Both are the same fact stated twice:
-nothing to deploy until Flutter has run.
-
-So `.github/workflows/deploy-web.yml` builds and deploys on every push to
-`main`, and **the Cloudflare Git build should be switched off** in the
-dashboard. It needs two repository secrets:
-
-| Secret | What it is |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | A token with the *Edit Cloudflare Workers* template |
-| `CLOUDFLARE_ACCOUNT_ID` | The account the Worker lives in |
-
-The workflow calls `wrangler` directly at a pinned version rather than through
-`cloudflare/wrangler-action`, which installs wrangler 3.90 by default. A
-Worker that serves only static assets — no `main`, no server-side code, which
-is what this is — is not supported before 4.x, and on 3.90 the deploy fails
-with *"Missing entry-point"*: a message that reads like a config error and is
-really a version one.
-
-Two more are optional. `SUPABASE_PROJECT_URL` and `SUPABASE_PROJECT_ANON_KEY`
-turn on the multi-source food backend (USDA, BLS); without them the app falls
-back to Open Food Facts, which needs no credentials. `SENTRY_DNS` is left
-empty on purpose — crash reports from a personal fork have no business
-arriving in the upstream project's account, and an empty DSN makes Sentry
-inert.
-
-## Building it yourself
+## Rebuilding
 
 ```sh
-flutter build web --release --no-web-resources-cdn --base-href /
-just site        # preview the built output on http://localhost:8787
-just site_deploy # deploy it (needs Cloudflare credentials)
+just build_web   # flutter build web --release --no-web-resources-cdn --base-href /
+git add build/web
 ```
 
 `--no-web-resources-cdn` is not optional. Without it the engine (CanvasKit) is
@@ -65,29 +42,34 @@ fetched from `gstatic.com` on every cold load: a third-party request this app
 has no reason to make, blocked by the CSP in `web/_headers`, which leaves a
 blank page rather than a slow one.
 
+The `canvaskit/skwasm*` files are deleted after the build. They are the
+WebAssembly renderer; this is a JavaScript build and never loads them, and
+they are 12 MB of the output. Verified by removing them and booting the app.
+
+`just site` serves the built folder locally on http://localhost:8787.
+
 ## What the browser costs you
 
-The web build is the same app, but a browser is not a phone, and three
-guarantees change:
+Three guarantees change compared with the phone app:
 
 - **No hardware-backed key.** On a phone the Hive encryption key lives in the
   Android Keystore or iOS Keychain. A browser has no equivalent, so the key
   sits in browser storage. Your data still never leaves the device; the
   protection around it is weaker.
 - **Clearing site data deletes everything.** Hive keeps its boxes in
-  IndexedDB. One tap in a browser's settings wipes the diary with no undo, so
-  the export in Settings matters more here than it does on a phone.
+  IndexedDB, so one tap in a browser's settings wipes the diary with no undo.
+  The export in Settings matters more here than it does on a phone — and it
+  works: export downloads a zip, import reads one back.
 - **Three features have no browser implementation:** Health Connect / Apple
-  Health sync, local notifications (so no fasting-complete alert), and photos
-  for meals, recipes and profiles — `path_provider` has no web support, and
-  the app degrades to a logged warning rather than a crash.
+  Health sync, local notifications, and photos for meals, recipes and
+  profiles. Each degrades to a logged warning rather than a crash.
 
 ## Requests the app makes
 
 The shell loads nothing from a third party: no hosted fonts, no analytics, no
 CDN scripts. The app itself contacts **Open Food Facts** when you search for a
-food or scan a barcode, and its image CDN for product photos — that is what a
-food database is, and `web/_headers` allows those two hosts and no others.
+food or scan a barcode, and its image CDN for product photos. `web/_headers`
+allows those two hosts and no others.
 
 ## Worker name
 

@@ -90,14 +90,29 @@ dev:
 dev_seed:
   fvm flutter run --flavor develop -t lib/dev/main_dev.dart
 
-# Build the web app (see docs/website.md — the CDN flag is not optional)
+# Build the web app and stage it for commit — build/web is committed and is
+# what Cloudflare publishes, so a code change that skips this leaves the live
+# site serving the old app (see docs/website.md).
+#
+# The CDN flag is not optional, and skwasm is the WebAssembly renderer this
+# JavaScript build never loads — 12 MB of output that would sit in git.
 build_web:
   flutter build web --release --no-web-resources-cdn --base-href /
+  # Engine variants and debug files this build never serves, stripped so they
+  # do not sit in git: skwasm is the WebAssembly renderer (this is a
+  # JavaScript build), experimental_webparagraph is opt-in via a flag nothing
+  # sets, and *.symbols only symbolicate stack traces for a developer. Each
+  # was checked by deleting it and booting the app. Together, 15 MB of 46.
+  rm -rf build/web/canvaskit/skwasm* build/web/canvaskit/experimental_webparagraph
+  find build/web -name '*.symbols' -delete
+  rm -f build/web/.last_build_id
+  git add -A build/web
 
 # Preview the built web app on http://localhost:8787
 site: build_web
   npx wrangler dev
 
-# Deploy the built web app to Cloudflare — CI does this on every push to main
+# Deploy by hand. Normally unnecessary: pushing to main is the deploy, because
+# Cloudflare publishes the committed build/web on every push.
 site_deploy: build_web
   npx wrangler deploy
