@@ -90,10 +90,14 @@ dev:
 dev_seed:
   fvm flutter run --flavor develop -t lib/dev/main_dev.dart
 
-# Preview the static site in public/ on http://localhost:8787 (see docs/website.md)
-site:
+# Build the web app (see docs/website.md — the CDN flag is not optional)
+build_web:
+  flutter build web --release --no-web-resources-cdn --base-href /
+
+# Preview the built web app on http://localhost:8787
+site: build_web
   npx wrangler dev
 
-# Deploy public/ to Cloudflare — what the Cloudflare build runs on every push
-site_deploy:
+# Deploy the built web app to Cloudflare — CI does this on every push to main
+site_deploy: build_web
   npx wrangler deploy

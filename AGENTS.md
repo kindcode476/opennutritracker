@@ -67,13 +67,19 @@ just gen_l10n      # regenerate lib/generated/ from the ARBs (gitignored output)
 just ci            # full CI: install, format check, gen_l10n, build, analyze, test
 just dev           # fvm flutter run --flavor develop
 just dev_seed      # same, but wipes the active profile and seeds a year of demo data — see below
-just site          # preview the static site in public/ (npx wrangler dev)
+just build_web     # flutter build web (the --no-web-resources-cdn flag is required)
+just site          # build, then preview the web app on localhost:8787
 ```
 
-`public/` is the project's static site, deployed to Cloudflare by
-`npx wrangler deploy` (`wrangler.jsonc`). It is not a Flutter build output and
-the app has no web target — see [`docs/website.md`](docs/website.md) before
-changing either.
+**Web is a supported target in this fork.** The app is deployed as a personal
+web build to Cloudflare from `build/web`; `web/` holds the shell, icons,
+service worker and `_headers`, and GitHub Actions does the build because
+Cloudflare's image has no Flutter. Read
+[`docs/website.md`](docs/website.md) before touching `web/`, `wrangler.jsonc`
+or the deploy workflow. Anything reaching for `dart:io` needs
+`lib/core/utils/platform_info.dart`: `dart:io` compiles for web here and
+throws at runtime, so `Platform.isAndroid` and friends are a silent way to
+ship a blank page.
 
 See [`docs/demo-data.md`](docs/demo-data.md) for the demo seeder and the shipped
 "try it" onboarding flow that share `lib/core/utils/demo/`.
