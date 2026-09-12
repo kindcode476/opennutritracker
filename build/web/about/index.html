@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>About — OpenNutriTracker</title>
+<meta name="description" content="Open-source calorie, macro, and micronutrient logging for Android and iOS. No account, no ads, no analytics; your diary stays encrypted on your phone." />
+<meta name="theme-color" content="#23da62" />
+<link rel="icon" href="logo.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="styles.css" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="OpenNutriTracker" />
+<meta property="og:description" content="Free. Open. Cited. Calorie, macro, and micronutrient logging for Android and iOS, with your diary kept on your phone." />
+<meta property="og:image" content="logo.svg" />
+<meta name="twitter:card" content="summary" />
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="hero">
+  <div class="wrap">
+    <img src="logo.svg" alt="" width="84" height="84" />
+    <h1>OpenNutriTracker</h1>
+    <p class="tagline">Free. Open. Cited.</p>
+    <p class="lede">
+      OpenNutriTracker logs what you eat and drink against a calorie and macro target it
+      works out from your height, weight, age, and activity level, and keeps the record on
+      your phone. It is for anyone who wants the numbers without handing their eating
+      history to a company — whether that is losing weight, gaining it, managing a
+      condition, or simply knowing.
+    </p>
+    <div class="actions">
+      <a class="btn btn-primary" href="/">Open the app<small>runs in this browser</small></a>
+      <a class="btn" href="https://play.google.com/store/apps/details?id=com.opennutritracker.ont.opennutritracker">Google Play<small>the upstream app, Android</small></a>
+      <a class="btn" href="https://apps.apple.com/us/app/opennutritracker/id6451490901">App Store<small>the upstream app, iOS</small></a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<section aria-labelledby="why">
+  <div class="wrap">
+    <h2 id="why">Why OpenNutriTracker</h2>
+    <p>Eight commitments the source code has to keep.</p>
+    <ul class="grid">
+      <li class="card">
+        <h3>Cited</h3>
+        <p>Calorie targets follow IOM 2005, BMI follows WHO, macros follow WHO TRS 916, and activity burn follows the 2024 Compendium. The in-app Sources &amp; References screen links every paper.</p>
+      </li>
+      <li class="card">
+        <h3>Careful</h3>
+        <p>The fasting timer opens with a content warning linking BEAT and NEDA, and “Not for me” is a first-class answer. No streak guilt, and no notification you didn't ask for.</p>
+      </li>
+      <li class="card">
+        <h3>Free</h3>
+        <p>No paid tier and no ads, with no advertising or analytics SDKs in the dependency list to add them with. That includes the micronutrient panel the big-name trackers put behind a subscription.</p>
+      </li>
+      <li class="card">
+        <h3>Private</h3>
+        <p>No account to create. Your diary lives in AES-256-encrypted storage with the key held in the Android Keystore or iOS Keychain, and every destination that receives a request is listed.</p>
+      </li>
+      <li class="card">
+        <h3>Portable</h3>
+        <p>Export your diary, activities, tracked days, recipes, weight history and custom activity templates as JSON — or diary, activities and tracked days as CSV — re-import it, or share an entry by QR.</p>
+      </li>
+      <li class="card">
+        <h3>Open</h3>
+        <p>Food data from Open Food Facts, USDA FoodData Central (CC0) and the German BLS (CC BY 4.0). The backend is its own open repository you can self-host.</p>
+      </li>
+      <li class="card">
+        <h3>Community driven</h3>
+        <p>Over 30 developers have contributed code, and most merged pull requests come from someone other than the maintainer. Translations are contributed on Weblate, which needs no local setup.</p>
+      </li>
+      <li class="card">
+        <h3>Inclusive</h3>
+        <p>Non-binary calorie estimation grounded in published trans-health research, nine languages, kcal or kJ, and screen-reader support treated as a bug when it breaks.</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<section aria-labelledby="features">
+  <div class="wrap">
+    <h2 id="features">Key features</h2>
+    <p>What the app does once it is on your phone.</p>
+    <ul class="features">
+      <li><b>Food logging.</b> Search, scan a barcode, or quick-add kcal, backed by Open Food Facts, USDA, and German BLS.</li>
+      <li><b>Food diary.</b> Breakfast, Lunch, Dinner, and Snack on a calendar, with per-meal kcal targets.</li>
+      <li><b>Trends.</b> Streaks, calories against your goal line, macro averages, water, and weight over time.</li>
+      <li><b>Micronutrients.</b> Day and week views for ten nutrients, with optional reference-intake bars.</li>
+      <li><b>Meals and recipes.</b> Reusable recipes with photo, brand, and barcode.</li>
+      <li><b>Activities and weight.</b> Workout catalogue or custom activities; weight trend against a target.</li>
+      <li><b>Water and fasting.</b> A home-screen water chip and an optional intermittent-fasting timer.</li>
+      <li><b>Themes and units.</b> Material You accent on Android 12+, sixteen built-in themes, kcal or kJ.</li>
+      <li><b>Export and import.</b> JSON and CSV export, JSON import, and QR sharing.</li>
+    </ul>
+  </div>
+</section>
+
+<section aria-labelledby="privacy">
+  <div class="wrap">
+    <h2 id="privacy">Privacy</h2>
+    <p>No account, no sign-in, no analytics, no ads.</p>
+    <div class="note">
+      <p>
+        This is a personal web build. Your profile, diary, activities, weight, water and
+        fasting history, custom meals, and recipes are held in this browser's own storage
+        and are never sent to a server. <b>Settings → Delete all my data</b> wipes the
+        active profile, and so does clearing site data for this address — which is worth
+        knowing, because it is irreversible and takes one tap in a browser menu.
+      </p>
+      <p>
+        A browser has no Keystore or Keychain, so the hardware-backed key protection the
+        phone app relies on has no equivalent here. Data stays local either way; the
+        guarantee around it is weaker.
+      </p>
+      <p>
+        The repository lists every destination the app can contact and what each one is sent.
+        The formal policy is published separately:
+        <a href="https://www.iubenda.com/privacy-policy/53501884">Data Protection</a>.
+      </p>
+      <p>
+        This page loads no fonts, scripts, images, or trackers from anyone but the host
+        serving it. The app itself reaches Open Food Facts when you search for a food or
+        scan a barcode — that is what a food database is — and nothing else.
+      </p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <ul>
+      <li><a href="https://github.com/simonoppowa/OpenNutriTracker">Source</a></li>
+      <li><a href="https://github.com/simonoppowa/OpenNutriTracker/blob/main/CONTRIBUTING.md">Contributing</a></li>
+      <li><a href="https://hosted.weblate.org/engage/opennutritracker/">Translate</a></li>
+      <li><a href="https://github.com/simonoppowa/OpenNutriTracker/issues">Issue tracker</a></li>
+      <li><a href="https://github.com/simonoppowa/OpenNutriTracker-Backend">Food backend</a></li>
+      <li><a href="https://www.iubenda.com/privacy-policy/53501884">Privacy policy</a></li>
+    </ul>
+    <p>
+      OpenNutriTracker is licensed under the GPLv3. Food data is powered by Open Food Facts
+      together with USDA FoodData Central (CC0) and the Bundeslebensmittelschlüssel 4.0
+      (CC BY 4.0, © Max Rubner-Institut).
+    </p>
+    <p>
+      Google Play and the Google Play logo are trademarks of Google LLC. App Store is a
+      service mark of Apple Inc.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

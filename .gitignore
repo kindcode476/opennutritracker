@@ -32,7 +32,21 @@ migrate_working_dir/
 .packages
 .pub-cache/
 .pub/
-/build/
+# Build output is ignored — with one deliberate exception below.
+/build/*
+
+# The built web app IS committed, and is what Cloudflare publishes.
+#
+# Cloudflare's builder runs `npx wrangler deploy` and has no Flutter SDK, so
+# it cannot produce this folder itself: it can only upload one that is already
+# here. Committing it is what lets a push deploy with no API token, no CI
+# secrets, and no second build service. See docs/website.md.
+#
+# The cost is that this folder must be rebuilt whenever app code changes, or
+# the live site quietly lags the source. `just build_web` does it.
+!/build/web
+# Regenerated every build; carries no information anyone reads.
+/build/web/.last_build_id
 
 # API Keys
 *.env
