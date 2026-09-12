@@ -55,9 +55,31 @@ jobs:
       - name: Build web
         run: flutter build web --release --no-web-resources-cdn --base-href /
 
+      # Fail here, plainly, rather than inside wrangler with an auth error that
+      # does not say which half is missing.
+      - name: Check Cloudflare credentials are present
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          missing=""
+          [ -z "$CLOUDFLARE_API_TOKEN" ] && missing="$missing CLOUDFLARE_API_TOKEN"
+          [ -z "$CLOUDFLARE_ACCOUNT_ID" ] && missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository secret(s):$missing — add them under" \
+                 "Settings → Secrets and variables → Actions. The build above succeeded;" \
+                 "only the deploy needs these."
+            exit 1
+          fi
+
+      # wrangler is invoked directly, at a pinned version, rather than through
+      # cloudflare/wrangler-action. The action installs wrangler 3.90 by
+      # default, and a Worker that serves only static assets — no `main`, no
+      # server-side code, which is exactly what this is — is not supported
+      # before 4.x. On 3.90 the deploy fails with "Missing entry-point", which
+      # reads like a config error and is really a version one.
       - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4.131.1 deploy
