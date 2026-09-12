@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:logging/logging.dart';
@@ -13,6 +12,7 @@ import 'package:opennutritracker/features/add_meal/data/dto/sp/sp_food_dto.dart'
 import 'package:opennutritracker/features/add_meal/util/meal_relevance_ranker.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 
 /// Searches the Supabase multi-source food backend (`food_summary` view,
 /// see opennutritracker-backend/sql/schema.sql).
@@ -41,7 +41,7 @@ class SpFoodDataSource {
 
         final supaBaseClient = locator<SupabaseClient>();
         final locale = SPConst.translationLocaleOf(
-          SupportedLanguage.fromCode(Platform.localeName),
+          SupportedLanguage.fromCode(platformLocaleName),
         );
 
         if (locale != null) {
@@ -91,7 +91,7 @@ class SpFoodDataSource {
   Future<Map<int, String>> fetchPortionLabels(List<int> foodIds) async {
     if (foodIds.isEmpty) return const {};
     final locale = SPConst.translationLocaleOf(
-      SupportedLanguage.fromCode(Platform.localeName),
+      SupportedLanguage.fromCode(platformLocaleName),
     );
     // English needs no lookup: the stored description is already English.
     if (locale == null) return const {};
@@ -127,7 +127,7 @@ class SpFoodDataSource {
   ) async {
     if (foodIds.isEmpty) return const {};
     final locale = SPConst.translationLocaleOf(
-      SupportedLanguage.fromCode(Platform.localeName),
+      SupportedLanguage.fromCode(platformLocaleName),
     );
 
     try {

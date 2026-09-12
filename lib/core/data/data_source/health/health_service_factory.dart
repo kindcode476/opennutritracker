@@ -1,9 +1,9 @@
-import 'dart:io' show Platform;
 
 import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/data/data_source/health/health_package_service.dart';
 import 'package:opennutritracker/core/data/data_source/health/health_service.dart';
 import 'package:opennutritracker/core/data/data_source/health/noop_health_service.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 
 final _log = Logger('HealthServiceFactory');
 
@@ -14,7 +14,7 @@ final _log = Logger('HealthServiceFactory');
 /// itself unavailable. A health plugin that cannot initialise must never be
 /// able to stop the app from launching.
 Future<HealthService> createHealthService() async {
-  if (!Platform.isAndroid && !Platform.isIOS) {
+  if (!isAndroidPlatform && !isIOSPlatform) {
     return const NoopHealthService();
   }
   try {

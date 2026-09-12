@@ -132,6 +132,7 @@ import 'package:opennutritracker/features/settings/presentation/bloc/custom_meal
 import 'package:opennutritracker/features/settings/presentation/bloc/export_import_bloc.dart';
 import 'package:opennutritracker/features/settings/presentation/bloc/settings_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:logging/logging.dart';
 
 final locator = GetIt.instance;
 
@@ -191,15 +192,7 @@ Future<void> initLocator() async {
   );
 
   // Backend
-  await Supabase.initialize(
-    url: Env.supabaseProjectUrl,
-    publishableKey: Env.supabaseProjectAnonKey,
-    // In debug builds supabase_flutter attaches its own printer to the
-    // shared root log stream (hierarchical logging is off), duplicating
-    // every app log line in a second format. LoggerConfig already prints
-    // everything — including supabase records — once.
-    debug: false,
-  );
+  await _initSupabase();
   locator.registerLazySingleton<SupabaseClient>(() => Supabase.instance.client);
 
   // Notification service (#312)
@@ -629,4 +622,35 @@ Future<void> initLocator() async {
   locator.registerLazySingleton<HealthService>(() => healthService);
 
   await ensureConfigInitialized(locator());
+}
+
+/// Brings up the Supabase food backend, and lets the app start without it.
+///
+/// The multi-source backend (USDA, BLS) is one of two food sources; Open Food
+/// Facts is the other and needs no credentials. Initialisation fails when the
+/// `.env` carries the repository's placeholder values rather than real ones —
+/// which is exactly the state a fork builds in — and an unreachable *second*
+/// food database is no reason for the whole app to refuse to open. Searching
+/// it will fail later and visibly; the diary, the targets, and Open Food Facts
+/// all work regardless.
+Future<void> _initSupabase() async {
+  final log = Logger('locator');
+  try {
+    await Supabase.initialize(
+      url: Env.supabaseProjectUrl,
+      publishableKey: Env.supabaseProjectAnonKey,
+      // In debug builds supabase_flutter attaches its own printer to the
+      // shared root log stream (hierarchical logging is off), duplicating
+      // every app log line in a second format. LoggerConfig already prints
+      // everything — including supabase records — once.
+      debug: false,
+    );
+  } catch (error, stackTrace) {
+    log.warning(
+      'Supabase backend unavailable; food search falls back to Open Food '
+      'Facts for this session',
+      error,
+      stackTrace,
+    );
+  }
 }

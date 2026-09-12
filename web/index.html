@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Replaced at build time by the --base-href argument; "/" when served
+       from the root of the domain, which is how this fork deploys. -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Personal web build of OpenNutriTracker — calorie, macro and micronutrient logging kept in this browser.">
+
+  <!-- Installed to the home screen, this is what iOS reads. -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="OpenNutriTracker">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d1311" media="(prefers-color-scheme: dark)">
+
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>OpenNutriTracker</title>
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    /* Painted before Flutter takes over the canvas, so the first frame is the
+       app's own background rather than a white flash. */
+    html, body { margin: 0; padding: 0; height: 100%; background: #f7f5f0; }
+    @media (prefers-color-scheme: dark) { html, body { background: #0d1311; } }
+  </style>
+</head>
+<body>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

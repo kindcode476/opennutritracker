@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
@@ -12,6 +11,7 @@ import 'package:opennutritracker/features/add_meal/data/dto/off/off_product_resp
 import 'package:opennutritracker/features/add_meal/data/dto/off/off_word_response_dto.dart';
 import 'package:opennutritracker/features/scanner/data/product_not_found_exception.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 
 class OFFDataSource {
   static const _timeoutDuration = Duration(seconds: 60);
@@ -46,7 +46,7 @@ class OFFDataSource {
   /// English appended as a fallback so non-English locales still match the
   /// large English-only slice of the catalogue.
   String _searchLangs() {
-    final lang = SupportedLanguage.fromCode(Platform.localeName).name;
+    final lang = SupportedLanguage.fromCode(platformLocaleName).name;
     return lang == 'en' ? 'en' : '$lang,en';
   }
 
