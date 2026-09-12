@@ -1,0 +1,28 @@
+// Cloudflare Workers deployment for the project's static site in public/.
+//
+// The Cloudflare build runs `npx wrangler deploy` at the repository root. With
+// no config file, wrangler has to guess what to publish, finds no directory of
+// static files in a Flutter app tree, and fails with:
+//
+//   Could not detect a directory containing static files (e.g. html, css and
+//   js) for the project
+//
+// This file removes the guesswork. It deploys public/ as a static-asset Worker
+// with no server-side code — there is no "main", so nothing runs per request.
+//
+// The Flutter app itself is not deployed here and has no web target: it builds
+// for Android and iOS only, and its dependencies (barcode scanner, Health
+// Connect / Apple Health, secure storage) are mobile plugins.
+//
+// "name" must match the Worker the Cloudflare project is connected to, or the
+// build will deploy to a second Worker under this name instead.
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "opennutritracker",
+  "compatibility_date": "2026-09-12",
+  "assets": {
+    "directory": "./public",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

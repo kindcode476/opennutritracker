@@ -89,3 +89,11 @@ dev:
 # Run with the active profile wiped and reseeded with demo data (skips onboarding)
 dev_seed:
   fvm flutter run --flavor develop -t lib/dev/main_dev.dart
+
+# Preview the static site in public/ on http://localhost:8787 (see docs/website.md)
+site:
+  npx wrangler dev
+
+# Deploy public/ to Cloudflare — what the Cloudflare build runs on every push
+site_deploy:
+  npx wrangler deploy

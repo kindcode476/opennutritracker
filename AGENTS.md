@@ -67,7 +67,13 @@ just gen_l10n      # regenerate lib/generated/ from the ARBs (gitignored output)
 just ci            # full CI: install, format check, gen_l10n, build, analyze, test
 just dev           # fvm flutter run --flavor develop
 just dev_seed      # same, but wipes the active profile and seeds a year of demo data — see below
+just site          # preview the static site in public/ (npx wrangler dev)
 ```
+
+`public/` is the project's static site, deployed to Cloudflare by
+`npx wrangler deploy` (`wrangler.jsonc`). It is not a Flutter build output and
+the app has no web target — see [`docs/website.md`](docs/website.md) before
+changing either.
 
 See [`docs/demo-data.md`](docs/demo-data.md) for the demo seeder and the shipped
 "try it" onboarding flow that share `lib/core/utils/demo/`.

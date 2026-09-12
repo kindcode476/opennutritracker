@@ -77,3 +77,9 @@ tool/verify_openai_key.dart
 
 # Fastlane / Bundler — local gem install path (bundle config set path vendor/bundle)
 ios/vendor/
+
+# Cloudflare Workers — local state from `npx wrangler dev` / `deploy`, plus the
+# npx download cache. The site itself (public/) and wrangler.jsonc are tracked;
+# nothing here is a build output of it.
+.wrangler/
+node_modules/
