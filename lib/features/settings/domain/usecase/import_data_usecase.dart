@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:logging/logging.dart';
 import 'package:opennutritracker/core/data/data_source/custom_activity_template_dbo.dart';
 import 'package:opennutritracker/core/data/data_source/user_activity_dbo.dart';
 import 'package:opennutritracker/core/data/dbo/intake_dbo.dart';
@@ -16,9 +17,12 @@ import 'package:opennutritracker/core/data/repository/tracked_day_repository.dar
 import 'package:opennutritracker/core/data/repository/user_activity_repository.dart';
 import 'package:opennutritracker/core/data/repository/weight_log_repository.dart';
 import 'package:opennutritracker/core/utils/csv_data_exporter.dart';
+import 'package:opennutritracker/core/utils/platform_info.dart';
 import 'package:opennutritracker/core/utils/user_image_storage.dart';
 
 class ImportDataUsecase {
+  static final _log = Logger('ImportDataUsecase');
+
   final UserActivityRepository _userActivityRepository;
   final IntakeRepository _intakeRepository;
   final TrackedDayRepository _trackedDayRepository;
@@ -55,13 +59,15 @@ class ImportDataUsecase {
       // allowedExtensions: ['zip'],
     );
 
-    if (result == null || result.path == null) {
+    if (result == null) {
       throw Exception('No file selected');
     }
 
-    // Read the file bytes using the file path
-    final file = File(result.path!);
-    final zipBytes = await file.readAsBytes();
+    // Read through PlatformFile rather than dart:io. On the web a picked file
+    // has no path — it is a blob the browser holds — so File(result.path!)
+    // threw before it could read a byte, which made restoring a backup
+    // impossible on the one platform where the data lives nowhere else.
+    final zipBytes = await result.readAsBytes();
     final archive = ZipDecoder().decodeBytes(zipBytes);
 
     // Extract and process user activity data
@@ -161,6 +167,23 @@ class ImportDataUsecase {
     // so we just write the bytes back into the right private documents
     // subdirectory. Anything outside those known prefixes is skipped by
     // the sanitiser, so a hostile zip can't escape into other folders.
+    if (isWebPlatform) {
+      // No documents directory to restore into, and nothing in the app can
+      // display these bytes on the web anyway. The diary, recipes and
+      // everything else are already imported above; refusing the whole
+      // restore here would throw that away over the one part the platform
+      // cannot hold.
+      final photos = archive.files
+          .where((entry) =>
+              entry.isFile && UserImageStorage.sanitizeRelative(entry.name) != null)
+          .length;
+      if (photos > 0) {
+        _log.info('$photos photo(s) in the bundle were skipped: the web build '
+            'has nowhere to store them');
+      }
+      return true;
+    }
+
     final recipeDir = await UserImageStorage.ensureDirectory(
       UserImageKind.recipe,
     );
@@ -196,12 +219,13 @@ class ImportDataUsecase {
     String trackedDayCsvFileName = 'user_tracked_day.csv',
   }) async {
     final result = await FilePicker.pickFile(type: FileType.any);
-    if (result == null || result.path == null) {
+    if (result == null) {
       throw Exception('No file selected');
     }
 
-    final file = File(result.path!);
-    final zipBytes = await file.readAsBytes();
+    // Read through PlatformFile — see importData above for why dart:io is the
+    // wrong door on the web.
+    final zipBytes = await result.readAsBytes();
     final archive = ZipDecoder().decodeBytes(zipBytes);
 
     final activityFile = archive.findFile(userActivityCsvFileName);

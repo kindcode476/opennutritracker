@@ -1,3 +1,9 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:cross_file/cross_file.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:file_picker_platform_interface/file_picker_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:opennutritracker/core/data/data_source/config_data_source.dart';
@@ -19,8 +25,64 @@ import 'package:opennutritracker/core/domain/usecase/get_kcal_goal_usecase.dart'
 import 'package:opennutritracker/core/domain/usecase/get_macro_goal_usecase.dart';
 import 'package:opennutritracker/features/settings/domain/usecase/import_meals_json_usecase.dart';
 
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+
 import '../helpers/hive_test_setup.dart';
 import '../helpers/fake_hive_db_provider.dart';
+
+
+/// A picked file with **no path** — what every browser hands back, because
+/// the file is a blob the page holds rather than something on a disk the app
+/// can open.
+final class _PathlessPickedFile extends PlatformFile {
+  _PathlessPickedFile(this.name, String content)
+      : _bytes = Uint8List.fromList(utf8.encode(content));
+
+  @override
+  final String name;
+
+  final Uint8List _bytes;
+
+  // A blob: URI, so `path` (which only answers for file: URIs) is null.
+  @override
+  Uri get uri => Uri.parse('blob:https://example.invalid/0a1b2c3d');
+
+  @override
+  XFile get xFile => XFile.fromData(_bytes, name: name);
+
+  @override
+  int? lengthSync() => _bytes.length;
+
+  @override
+  Future<int> length() async => _bytes.length;
+
+  @override
+  Future<Uint8List> readAsBytes() async => _bytes;
+
+  @override
+  Stream<Uint8List> readAsByteStream() => Stream.value(_bytes);
+}
+
+class _FakeFilePicker extends FilePickerPlatform with MockPlatformInterfaceMixin {
+  _FakeFilePicker(this.picked);
+
+  final PlatformFile? picked;
+
+  @override
+  Future<PlatformFile?> pickFile({
+    String? dialogTitle,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    int compressionQuality = 0,
+    AndroidOptions androidOptions = const AndroidOptions(),
+    DarwinOptions darwinOptions = const DarwinOptions(),
+    WindowsOptions windowsOptions = const WindowsOptions(),
+    LinuxOptions linuxOptions = const LinuxOptions(),
+    WebOptions webOptions = const WebOptions(),
+  }) async => picked;
+}
 
 /// Tracks the intakes the use case wrote without actually touching Hive
 /// for the intake/tracked-day side. The custom-meal side runs against a
@@ -93,6 +155,7 @@ void main() {
     late CustomMealDataSource customMealDataSource;
     late _RecordingAddIntakeUsecase addIntake;
     late ImportMealsJsonUsecase sut;
+    final _originalPicker = FilePickerPlatform.instance;
 
     setUpAll(() {
       TestWidgetsFlutterBinding.ensureInitialized();
@@ -130,6 +193,36 @@ void main() {
 
     tearDown(() async {
       await customMealBox.deleteFromDisk();
+    });
+
+    tearDown(() {
+      FilePickerPlatform.instance = _originalPicker;
+    });
+
+    test('reads a picked file that has no path (the web case)', () async {
+      // Before this worked, the use case did File(picked.path!) — and on the
+      // web `path` is always null, so importing threw before reading a byte.
+      // That is the platform where the diary lives nowhere else, which makes
+      // this the restore half of the only backup a browser build has.
+      FilePickerPlatform.instance = _FakeFilePicker(
+        _PathlessPickedFile(
+          'meals.json',
+          '{"name":"Dal","kcal":180,"protein":9,"carbs":28,"fat":3}',
+        ),
+      );
+
+      final result = await sut.importFromPickedFile();
+
+      expect(result, isNotNull);
+      expect(result!.imported, 1);
+      expect(addIntake.writtenIntakes.single.meal.name, 'Dal');
+    });
+
+    test('a cancelled pick returns null rather than throwing', () async {
+      FilePickerPlatform.instance = _FakeFilePicker(null);
+
+      expect(await sut.importFromPickedFile(), isNull);
+      expect(addIntake.writtenIntakes, isEmpty);
     });
 
     test('one pasted entry writes one intake and one custom meal', () async {

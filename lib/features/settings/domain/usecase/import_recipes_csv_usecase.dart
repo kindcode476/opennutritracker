@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:opennutritracker/core/domain/usecase/save_recipe_usecase.dart';
@@ -31,12 +30,15 @@ class ImportRecipesCsvUsecase {
       type: FileType.custom,
       allowedExtensions: ['csv'],
     );
-    if (picked == null || picked.path == null) {
+    if (picked == null) {
       return null;
     }
 
-    final file = File(picked.path!);
-    final content = await file.readAsString(encoding: utf8);
+    // Read through PlatformFile rather than dart:io. On the web a picked
+    // file has no path — it is a blob the browser holds — so File(picked.path!)
+    // threw before it could read a byte. This reads the same file on every
+    // platform, and is what makes import work in the browser at all.
+    final content = utf8.decode(await picked.readAsBytes());
 
     final parseResult = CsvRecipeImporter.parse(content);
 
